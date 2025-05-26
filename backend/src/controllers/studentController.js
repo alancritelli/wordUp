@@ -1,5 +1,19 @@
 const Student = require('../models/Student')
 
+const getStudentByStudentId = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    // Procura por studentId (convertendo para Number se necessário)
+    const student = await Student.findOne({ studentId: Number(studentId) });
+    if (!student) {
+      return res.status(404).json({ error: 'Aluno não encontrado' });
+    }
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro interno' });
+  }
+};
+
 const createStudent = async (req, res) => {
   try {
     const { name, email, whatsapp, progressLevel } = req.body
@@ -67,6 +81,7 @@ const deleteStudent = async (req, res) => {
 }
 
 module.exports = {
+  getStudentByStudentId,
   createStudent,
   getAllStudents,
   getStudentById,

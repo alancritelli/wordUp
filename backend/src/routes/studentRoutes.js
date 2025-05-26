@@ -5,6 +5,7 @@ const studentController = require('../controllers/studentController') // Certifi
 // Verifique se cada método existe no controller antes de chamá-lo
 router.post('/students', studentController.createStudent)
 router.get('/students', studentController.getAllStudents)
+router.get('/students/:studentId', studentController.getStudentByStudentId)
 router.get('/students/:id', studentController.getStudentById)
 router.put('/students/:id', studentController.updateStudent)
 router.delete('/students/:id', studentController.deleteStudent)
