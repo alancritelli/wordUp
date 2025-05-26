@@ -1,4 +1,4 @@
-// src/pages/FeedbackForm.js
+// src/pages/FeedbackEdit.js
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import {
@@ -7,79 +7,85 @@ import {
   Box,
   TextField,
   Button,
-  MenuItem
+  MenuItem,
+  Snackbar
 } from '@mui/material'
+import MuiAlert from '@mui/material/Alert'
+import { useParams, useNavigate } from 'react-router-dom'
 
-const FeedbackForm = () => {
-  // Estado para armazenar a lista de alunos
-  const [students, setStudents] = useState([])
-  // Estado para os dados do feedback, incluindo o comentário livre do professor
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />
+})
+
+const FeedbackEdit = () => {
+  const { feedbackId } = useParams()
+  const navigate = useNavigate()
   const [feedback, setFeedback] = useState({
-    studentId: '', // Este será um número selecionado do dropdown
-    content: '', // Outra informação que você pode querer
-    teacherComment: '', // Campo para o professor escrever livremente
+    studentId: '',
+    content: '',
     deadline: '',
     status: 'pending'
   })
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState('')
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success')
 
-  // Carrega a lista de alunos assim que o componente monta
   useEffect(() => {
     axios
-      .get('http://localhost:5000/api/students')
-      .then(response => setStudents(response.data))
-      .catch(error => console.error('Erro ao buscar alunos:', error))
-  }, [])
+      .get(`http://localhost:5000/api/feedbacks/${feedbackId}`)
+      .then(response => {
+        setFeedback(response.data)
+      })
+      .catch(error => {
+        console.error('Erro ao buscar feedback:', error)
+      })
+  }, [feedbackId])
 
   const handleChange = e => {
     setFeedback({ ...feedback, [e.target.name]: e.target.value })
   }
 
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false)
+  }
+
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      const response = await axios.post(
-        'http://localhost:5000/api/feedbacks',
+      await axios.put(
+        `http://localhost:5000/api/feedbacks/${feedbackId}`,
         feedback
       )
-      console.log('Feedback cadastrado:', response.data)
-      // Limpa os campos do formulário após o envio
-      setFeedback({
-        studentId: '',
-        content: '',
-        teacherComment: '',
-        deadline: '',
-        status: 'pending'
-      })
-    } catch (error) {
-      console.error('Erro ao cadastrar feedback:', error)
+      setSnackbarMessage('Feedback atualizado com sucesso!')
+      setSnackbarSeverity('success')
+      setSnackbarOpen(true)
+      setTimeout(() => {
+        navigate('/feedbacks')
+      }, 2000)
+    } catch (err) {
+      console.error('Erro ao atualizar feedback:', err)
+      setSnackbarMessage('Erro ao atualizar feedback!')
+      setSnackbarSeverity('error')
+      setSnackbarOpen(true)
     }
   }
 
   return (
     <Container maxWidth="sm">
       <Typography variant="h4" gutterBottom>
-        Novo Feedback
+        Editar Feedback
       </Typography>
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        {/* Campo para selecionar o aluno pelo studentId */}
         <TextField
           fullWidth
           margin="normal"
           variant="outlined"
-          select
           name="studentId"
-          label="Aluno"
+          label="ID do Aluno"
           value={feedback.studentId}
           onChange={handleChange}
           required
-        >
-          {students.map(student => (
-            <MenuItem key={student.studentId} value={student.studentId}>
-              {student.studentId} - {student.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        {/* Campo para o conteúdo do feedback, se necessário */}
+        />
         <TextField
           fullWidth
           margin="normal"
@@ -90,18 +96,6 @@ const FeedbackForm = () => {
           onChange={handleChange}
           required
         />
-        {/* Campo para o comentário livre do professor */}
-        <TextField
-          fullWidth
-          margin="normal"
-          variant="outlined"
-          name="teacherComment"
-          label="Comentário do Professor"
-          multiline
-          rows={4}
-          value={feedback.teacherComment}
-          onChange={handleChange}
-        />
         <TextField
           fullWidth
           margin="normal"
@@ -110,7 +104,7 @@ const FeedbackForm = () => {
           label="Prazo"
           type="date"
           InputLabelProps={{ shrink: true }}
-          value={feedback.deadline}
+          value={feedback.deadline ? feedback.deadline.substring(0, 10) : ''}
           onChange={handleChange}
           required
         />
@@ -135,11 +129,24 @@ const FeedbackForm = () => {
           color="primary"
           sx={{ mt: 2 }}
         >
-          Enviar Feedback
+          Atualizar Feedback
         </Button>
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   )
 }
 
-export default FeedbackForm
+export default FeedbackEdit

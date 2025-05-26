@@ -1,7 +1,14 @@
 // src/pages/StudentForm.js
 import React, { useState } from 'react'
 import axios from 'axios'
-import { TextField, Button, Container, Typography, Box } from '@mui/material'
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  Box,
+  MenuItem
+} from '@mui/material'
 
 const StudentForm = () => {
   const [student, setStudent] = useState({
@@ -64,16 +71,22 @@ const StudentForm = () => {
           onChange={handleChange}
           required
         />
+        {/* Campo de Nível de Progresso como seleção */}
         <TextField
           fullWidth
           margin="normal"
           variant="outlined"
+          select
           name="progressLevel"
           label="Nível de Progresso"
           value={student.progressLevel}
           onChange={handleChange}
           required
-        />
+        >
+          <MenuItem value="Basic">Iniciante</MenuItem>
+          <MenuItem value="Intermediate">Intermediario</MenuItem>
+          <MenuItem value="Advanced">Avançado</MenuItem>
+        </TextField>
         <Button
           type="submit"
           variant="contained"

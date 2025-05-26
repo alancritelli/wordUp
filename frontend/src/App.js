@@ -1,13 +1,15 @@
 // src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material';
-import theme from './themes/theme'; // Note que agora estamos importando de './themes/theme'
-import StudentList from './pages/StudentList';
-import StudentForm from './pages/StudentForm';
-import FeedbackList from './pages/FeedbackList';
-import FeedbackForm from './pages/FeedbackForm';
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { ThemeProvider } from '@mui/material/styles'
+import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material'
+import theme from './themes/theme'
+import StudentList from './pages/StudentList'
+import StudentForm from './pages/StudentForm'
+import StudentEdit from './pages/StudentEdit' // NOVO: Página de edição de aluno
+import FeedbackList from './pages/FeedbackList'
+import FeedbackForm from './pages/FeedbackForm'
+import FeedbackEdit from './pages/FeedbackEdit' // NOVO: Página de edição de feedback
 
 function App() {
   return (
@@ -36,13 +38,18 @@ function App() {
           <Routes>
             <Route path="/students" element={<StudentList />} />
             <Route path="/students/new" element={<StudentForm />} />
+            <Route path="/students/edit/:studentId" element={<StudentEdit />} />
             <Route path="/feedbacks" element={<FeedbackList />} />
             <Route path="/feedbacks/new" element={<FeedbackForm />} />
+            <Route
+              path="/feedbacks/edit/:feedbackId"
+              element={<FeedbackEdit />}
+            />
           </Routes>
         </Container>
       </Router>
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
+export default App

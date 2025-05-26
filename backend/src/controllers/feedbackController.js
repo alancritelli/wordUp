@@ -1,90 +1,88 @@
+// src/controllers/feedbackController.js
 const Feedback = require('../models/Feedback')
 const Student = require('../models/Student')
 
-const createFeedback = async (req, res) => {
+// Cria um novo feedback
+exports.createFeedback = async (req, res) => {
   try {
-    const { studentId, content, deadline, status } = req.body
-    const student = await Student.findById(studentId)
-    if (!student) return res.status(404).json({ error: 'Student not found' })
+    const { studentId, content, teacherComment, deadline, status } = req.body
 
-    const newFeedback = new Feedback({
-      student: studentId,
+    // Busca o aluno utilizando o campo numérico studentId
+    const student = await Student.findOne({ studentId: Number(studentId) })
+    if (!student) {
+      return res.status(404).json({ error: 'Aluno não encontrado' })
+    }
+
+    // Cria o feedback vinculando o ObjectId do aluno encontrado
+    const feedback = await Feedback.create({
+      student: student._id,
       content,
+      teacherComment,
       deadline,
       status
     })
-    await newFeedback.save()
-    res.status(201).json(newFeedback)
+
+    res.status(201).json(feedback)
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Error creating feedback', details: error.message })
+    console.error('Erro ao criar feedback:', error)
+    res.status(500).json({ error: 'Erro ao criar feedback' })
   }
 }
 
-const getAllFeedbacks = async (req, res) => {
+// Retorna todos os feedbacks
+exports.getAllFeedbacks = async (req, res) => {
   try {
-    const feedbacks = await Feedback.find().populate(
-      'student',
-      'name email whatsapp'
-    )
-    res.json(feedbacks)
+    const feedbacks = await Feedback.find().populate('student') // Popula dados do aluno, se necessário
+    res.status(200).json(feedbacks)
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Error fetching feedbacks', details: error.message })
+    console.error('Erro ao buscar feedbacks:', error)
+    res.status(500).json({ error: 'Erro ao buscar feedbacks' })
   }
 }
 
-const getFeedbackById = async (req, res) => {
+// Retorna um feedback pelo ID
+exports.getFeedbackById = async (req, res) => {
   try {
-    const feedback = await Feedback.findById(req.params.id).populate(
-      'student',
-      'name email whatsapp'
-    )
-    if (!feedback) return res.status(404).json({ error: 'Feedback not found' })
-    res.json(feedback)
+    const feedback = await Feedback.findById(req.params.id).populate('student')
+    if (!feedback) {
+      return res.status(404).json({ error: 'Feedback não encontrado' })
+    }
+    res.status(200).json(feedback)
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Error fetching feedback', details: error.message })
+    console.error('Erro ao buscar feedback:', error)
+    res.status(500).json({ error: 'Erro ao buscar feedback' })
   }
 }
 
-const updateFeedback = async (req, res) => {
+// Atualiza um feedback pelo ID
+exports.updateFeedback = async (req, res) => {
   try {
-    const updatedFeedback = await Feedback.findByIdAndUpdate(
+    const { content, teacherComment, deadline, status } = req.body
+    const feedback = await Feedback.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { content, teacherComment, deadline, status },
       { new: true }
     )
-    if (!updatedFeedback)
-      return res.status(404).json({ error: 'Feedback not found' })
-    res.json(updatedFeedback)
+    if (!feedback) {
+      return res.status(404).json({ error: 'Feedback não encontrado' })
+    }
+    res.status(200).json(feedback)
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Error updating feedback', details: error.message })
+    console.error('Erro ao atualizar feedback:', error)
+    res.status(500).json({ error: 'Erro ao atualizar feedback' })
   }
 }
 
-const deleteFeedback = async (req, res) => {
+// Deleta um feedback pelo ID
+exports.deleteFeedback = async (req, res) => {
   try {
-    const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id)
-    if (!deletedFeedback)
-      return res.status(404).json({ error: 'Feedback not found' })
-    res.json({ message: 'Feedback deleted successfully' })
+    const feedback = await Feedback.findByIdAndDelete(req.params.id)
+    if (!feedback) {
+      return res.status(404).json({ error: 'Feedback não encontrado' })
+    }
+    res.status(200).json({ message: 'Feedback deletado com sucesso' })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Error deleting feedback', details: error.message })
+    console.error('Erro ao deletar feedback:', error)
+    res.status(500).json({ error: 'Erro ao deletar feedback' })
   }
-}
-
-module.exports = {
-  createFeedback,
-  getAllFeedbacks,
-  getFeedbackById,
-  updateFeedback,
-  deleteFeedback
 }
